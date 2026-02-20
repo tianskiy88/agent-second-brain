@@ -2,7 +2,7 @@
 
 import logging
 
-from deepgram import AsyncDeepgramClient
+from deepgram import AsyncDeepgramClient, PrerecordedOptions
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ class DeepgramTranscriber:
         """Transcribe audio bytes to text.
 
         Args:
-            audio_bytes: Audio file content
+            audio_bytes: Audio file content (Telegram voice = OGG Opus)
 
         Returns:
             Transcribed text
@@ -27,12 +27,16 @@ class DeepgramTranscriber:
         """
         logger.info("Starting transcription, audio size: %d bytes", len(audio_bytes))
 
-        response = await self.client.listen.v1.media.transcribe_file(
-            request=audio_bytes,
+        source = {"buffer": audio_bytes, "mimetype": "audio/ogg"}
+        options = PrerecordedOptions(
             model="nova-3",
             language="ru",
             punctuate=True,
             smart_format=True,
+        )
+
+        response = await self.client.listen.asyncprerecorded.v("1").transcribe_file(
+            source, options
         )
 
         transcript = (
